@@ -1,0 +1,27 @@
+services:
+  mcp-resume-proxy:
+    # Build locally from this repo:
+    build:
+      context: .
+      dockerfile: Containerfile
+    # Or pull a published image (uncomment after first release):
+    # image: ghcr.io/c-laforest/mcp-resume-proxy:latest
+    container_name: mcp-resume-proxy
+    ports:
+      - "8767:8765"
+    environment:
+      # REQUIRED — full URL of your MCP server (no trailing slash).
+      UPSTREAM_URL: http://mcp-server:8080
+      PROXY_PORT: "8765"
+      UPSTREAM_TIMEOUT: "30"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8765/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.25"

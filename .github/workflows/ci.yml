@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python syntax check
+        run: python -m py_compile proxy.py
+      - name: Bash syntax check (test scripts)
+        run: |
+          for f in test/*.sh; do [ -f "$f" ] && bash -n "$f"; done
+      - name: Build container
+        run: docker build -t mcp-resume-proxy:ci -f Containerfile .

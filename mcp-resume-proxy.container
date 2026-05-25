@@ -1,0 +1,35 @@
+[Unit]
+Description=MCP-SSE session-resumption proxy
+Documentation=https://github.com/C-LaForest/mcp-resume-proxy
+Wants=network-online.target
+After=network-online.target podman.socket
+
+[Container]
+# Replace with the actual image source for your deployment, e.g.
+#   Image=ghcr.io/c-laforest/mcp-resume-proxy:latest
+# or build locally from this repo's Containerfile and reference the local tag.
+Image=localhost/mcp-resume-proxy:latest
+ContainerName=mcp-resume-proxy
+
+# Host port -> container port (8765 inside).
+PublishPort=8767:8765
+
+Environment=TZ=UTC
+Volume=/etc/localtime:/etc/localtime:ro
+
+# REQUIRED — full URL of the MCP server to front (no trailing slash).
+Environment=UPSTREAM_URL=http://mcp-server:8080
+Environment=PROXY_PORT=8765
+Environment=UPSTREAM_TIMEOUT=30
+
+# Tiny — proxy is request-relaying, no heavy lift.
+PodmanArgs=--memory=64m --cpus=0.25
+
+StopTimeout=10
+
+[Service]
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target default.target
